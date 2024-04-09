@@ -5,7 +5,7 @@
 // Author2 and ID and Group: Malak Reda Mohamed Esmail - 20230584 - Group B - S18
 // Author3 and ID and Group: Menna Talla Gamal Mahmoud - 20230421 - Group B - S18
 // Teaching Assistant: Ahmed Foad
-// Who did what: Menna Talla Gamal: filter 1,2,and the main menu
+// Who did what: Menna Talla Gamal: filter 1,4,7,10 and the main menu
 // Malak Reda: filter 3,4
 // Helana Wageh: filter 5
 
@@ -96,79 +96,79 @@ void addFrameToPicture(Image& image, int frameChoice) {
             cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Ignore invalid input
             continue; // Skip the rest of the loop iteration
         }
-    if (frameChoice == 1) {
-        // Simple Frame
-        // Make the user to choose frame color
-        int colorChoice;
-        cout << "Choose frame color:\n"<< "1. Red\n"<< "2. Green\n"<< "3. Blue\n"<< "4. Yellow\n"<< "5. Orange\n"<<"6. Purple\n";
-        while (true) {
-            cin >> colorChoice;
-            if (cin.fail()) {
-                cin.clear();
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                cout << "Invalid input. Please enter  a number from 1 to 6.\n";
-                continue;
+        if (frameChoice == 1) {
+            // Simple Frame
+            // Make the user to choose frame color
+            int colorChoice;
+            cout << "Choose frame color:\n"<< "1. Red\n"<< "2. Green\n"<< "3. Blue\n"<< "4. Yellow\n"<< "5. Orange\n"<<"6. Purple\n";
+            while (true) {
+                cin >> colorChoice;
+                if (cin.fail()) {
+                    cin.clear();
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    cout << "Invalid input. Please enter  a number from 1 to 6.\n";
+                    continue;
+                }
+                if (colorChoice >= 1 && colorChoice <= 6) {
+                    break;
+                } else {
+                    cout << "Invalid choice. Please enter a number from 1 to 6.\n";
+                }}
+            // Define frame color based on user's choice
+            int frameColor[3] = {0, 0, 0}; // Initialize to black
+            switch (colorChoice) {
+                case 1: // Red
+                    frameColor[0] = 255;
+                    break;
+                case 2: // Green
+                    frameColor[1] = 255;
+                    break;
+                case 3: // Blue
+                    frameColor[2] = 255;
+                    break;
+                case 4: // Yellow
+                    frameColor[0] = 255; frameColor[1] = 255;
+                    break;
+                case 5: // Orange
+                    frameColor[0] = 255; frameColor[1] = 165; frameColor[2] = 0;
+                    break;
+                case 6: // Purple
+                    frameColor[0] = 128; frameColor[1] = 0; frameColor[2] = 128;
+                    break;
+                default:
+                    cout << "Invalid choice. Using default color (black).\n";
+                    break;
             }
-            if (colorChoice >= 1 && colorChoice <= 6) {
-                break;
-            } else {
-                cout << "Invalid choice. Please enter a number from 1 to 6.\n";
-            }}
-        // Define frame color based on user's choice
-        int frameColor[3] = {0, 0, 0}; // Initialize to black
-        switch (colorChoice) {
-            case 1: // Red
-                frameColor[0] = 255;
-                break;
-            case 2: // Green
-                frameColor[1] = 255;
-                break;
-            case 3: // Blue
-                frameColor[2] = 255;
-                break;
-            case 4: // Yellow
-                frameColor[0] = 255; frameColor[1] = 255;
-                break;
-            case 5: // Orange
-                frameColor[0] = 255; frameColor[1] = 165; frameColor[2] = 0;
-                break;
-            case 6: // Purple
-                frameColor[0] = 128; frameColor[1] = 0; frameColor[2] = 128;
-                break;
-            default:
-                cout << "Invalid choice. Using default color (black).\n";
-                break;
-        }
-        // Add frame to the image
-        for (int i = 0; i < image.width; ++i) {
-            for (int j = 0; j < image.height; ++j) {
-                if (i < frameWidth || i >= image.width - frameWidth || j < frameWidth || j >= image.height - frameWidth) {
-                    // If within frame border
-                    for (int k = 0; k < 3; ++k) {
-                        image(i, j, k) = frameColor[k];
-                    }}}}
-    } else if (frameChoice == 2) {
-        // Fancy Frame
-        // Define frame colors
-        int frameColors[4][3] = {
-                {0, 255, 0},    // Green
-                {0, 0, 255},    // Blue
-                {255, 255, 0}   // Yellow
-        };
-        // Add frame to the image
-        for (int i = 0; i < image.width; ++i) {
-            for (int j = 0; j < image.height; ++j) {
-                if (i < frameWidth || i >= image.width - frameWidth || j < frameWidth || j >= image.height - frameWidth) {
-                    // If within frame border
-                    // Determine frame color based on position
-                    int colorIndex = ((i / 20) + (j / 20)) % 4;
-                    int frameColor[3] = {frameColors[colorIndex][0], frameColors[colorIndex][1], frameColors[colorIndex][2]};
+            // Add frame to the image
+            for (int i = 0; i < image.width; ++i) {
+                for (int j = 0; j < image.height; ++j) {
+                    if (i < frameWidth || i >= image.width - frameWidth || j < frameWidth || j >= image.height - frameWidth) {
+                        // If within frame border
+                        for (int k = 0; k < 3; ++k) {
+                            image(i, j, k) = frameColor[k];
+                        }}}}
+        } else if (frameChoice == 2) {
+            // Fancy Frame
+            // Define frame colors
+            int frameColors[4][3] = {
+                    {0, 255, 0},    // Green
+                    {0, 0, 255},    // Blue
+                    {255, 255, 0}   // Yellow
+            };
+            // Add frame to the image
+            for (int i = 0; i < image.width; ++i) {
+                for (int j = 0; j < image.height; ++j) {
+                    if (i < frameWidth || i >= image.width - frameWidth || j < frameWidth || j >= image.height - frameWidth) {
+                        // If within frame border
+                        // Determine frame color based on position
+                        int colorIndex = ((i / 20) + (j / 20)) % 4;
+                        int frameColor[3] = {frameColors[colorIndex][0], frameColors[colorIndex][1], frameColors[colorIndex][2]};
 
-                    for (int k = 0; k < 3; ++k) {
-                        image(i, j, k) = frameColor[k];
-                    }}}}
-    }  break; // Exit the loop once a valid frameChoice is entered
-}}
+                        for (int k = 0; k < 3; ++k) {
+                            image(i, j, k) = frameColor[k];
+                        }}}}
+        }  break; // Exit the loop once a valid frameChoice is entered
+    }}
 //__________________________________________
 // Function for Black and White
 void blackAndWhite(Image& image) {
@@ -194,10 +194,84 @@ void blackAndWhite(Image& image) {
                     image(i,j,k) = 255; // If the grayscale value is greater than or equal to the threshold, set the pixel to white
                 }}}}}
 //__________________________________________
-// Function for
+// Function for merge images
+void mergeImages(Image& image, Image& image2, int option) {
+    // Ask the user to choose the merge option
+    cout << "Choose the merge option:\n"
+         << "1- Resize the smaller image or both images to the biggest height and width and then merge\n"
+         << "2- Merge the common area of the smaller width and the smaller height\n";
+    while (true) {
+        cin >> option;
+
+        // Check if the user's input is valid
+        if (!cin.fail() && (option == 1 || option == 2)) {
+            break; // Exit the loop if the input is valid
+        }
+
+        cout << "Invalid input. Please enter 1 or 2.\n";
+        cin.clear(); // Clear the fail state
+        cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Ignore invalid input
+    }
+    Image* outputImage; // Pointer to the output image
+    if (option==1) {
+        // Determine the dimensions of the new image
+        int maxWidth = max(image.width, image2.width);
+        int maxHeight = max(image.height, image2.height);
+
+        // Create a new Image object with the maximum dimensions
+        outputImage = new Image(maxWidth, maxHeight);
+
+        // Loop over each pixel in the new image
+        for (int i = 0; i < maxWidth; ++i) {
+            for (int j = 0; j < maxHeight; ++j) {
+                // For each pixel, if it is within the dimensions of the original images,
+                // calculate the average of the corresponding pixels in the input images
+                for (int k = 0; k < 3; ++k) {
+                    if (i < image.width && j < image.height && i < image2.width && j < image2.height) {
+                        (*outputImage)(i, j, k) = (image(i, j, k) + image2(i, j, k)) / 2;
+                    } else if (i < image.width && j < image.height) {
+                        (*outputImage)(i, j, k) = image(i, j, k);
+                    } else if (i < image2.width && j < image2.height) {
+                        (*outputImage)(i, j, k) = image2(i, j, k);
+                    } else {
+                        (*outputImage)(i, j, k) = 0; // Fill the rest of the image with black
+                    }
+                }
+            }
+        }
+
+        // Replace the first image with the merged image
+        image = *outputImage;
+    }else if (option==2) {
+        // Merge the common area of the smaller width and the smaller height
+        // This is the same as the original function
+        // Determine the dimensions of the common area
+        int commonWidth = min(image.width, image2.width);
+        int commonHeight = min(image.height, image2.height);
+
+        // Create a new Image object with the maximum dimensions
+        outputImage = new Image(commonWidth, commonHeight);
+
+        // Loop over each pixel in the new image
+        for (int i = 0; i < commonWidth; ++i) {
+            for (int j = 0; j < commonHeight; ++j) {
+                // For each pixel, calculate the average of the corresponding pixels in the input images
+                for (int k = 0; k < 3; ++k) {
+                    (*outputImage)(i, j, k) = (image(i, j, k) + image2(i, j, k)) / 2;
+                }
+            }
+        }
+
+        // Replace the first image with the merged image
+        image = *outputImage;
+    }else{
+        cout << "Invalid option. Please enter 1 or 2.\n";
+    }
+}
+
 
 //__________________________________________
-// Function for
+// Function for Detect Image Edges
 
 //__________________________________________
 // Function for
@@ -253,7 +327,7 @@ bool saveImage(Image& image, string& pathOrName) {
         // Save the image
         try {
             image.saveImage(outputFilename);
-            cout << "Image has been saved as " << outputFilename << ".\n\n";
+            cout << "Image has been saved as " << outputFilename << ".\n"<<"__________________________________________\n\n";
             return true; // Set the flag to true after saving the image
         } catch (const std::exception& e) { //exception handling block is used to catch and handle exceptions that might be thrown during the execution of the program.  In this specific case, it's catching exceptions of type std::exception or any of its derived classes.
             //When an exception is caught, the code inside the catch block is executed
@@ -301,6 +375,8 @@ int main() {
             Image image(pathOrName); // Create an Image object with the chosen image
             int filter;
             bool imageSaved = false; // Add this line before the filter selection loop
+            bool return_back = false; //using this bool to return back to the main menu after saving the image
+            while (return_back == false){
             // Display menu
             cout << "Choose the filter: \n"
                  << "1 - Grayscale Conversion       2 - Black and White           3 - Invert Image                   4 - Merge Images\n"
@@ -330,6 +406,26 @@ int main() {
                     invertImage(image);
 
                 } else if (filter == 4) {
+                    //allow the user to enter the second image
+                    string pathOrName2;
+                    bool validInput2 = false;
+                    while (!validInput2) {
+                        cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear newline character
+                        // Ask the user to enter the name or full path to the image
+                        cout << "Enter the name or full path to the second image: ";
+                        getline(cin, pathOrName2);
+                        try {
+                            // Try to create an Image object with the entered image name or path
+                            Image image2(pathOrName2);
+                            validInput2 = true; // If the image opening is successful, exit the loop
+                        } catch (const std::exception& e) {
+                            cout << "Invalid image name or path. Please try again.\n";
+                        }
+                    }
+                    Image image2(pathOrName2); // Create an Image object with the chosen image
+                    int option;
+                    // Call the mergeImages function with the chosen option
+                    mergeImages(image, image2, option);
 
                 } else if (filter == 5) {
 
@@ -347,6 +443,8 @@ int main() {
                     addFrameToPicture(image, frameChoice);
 
                 } else if (filter == 10) {
+                    // Call the detectImageEdges function
+
 
                 } else if (filter == 11) {
 
@@ -366,32 +464,31 @@ int main() {
                      << "1- Add another filter\n"
                      << "2- Save the image\n";
                 while (true) {
-                    int choice;
+                    int choose;
                     // Check if the user's input is valid
-                    if (!(cin >> choice) || choice < 1 || choice > 2) {
+                    if (!(cin >> choose) || choose < 1 || choose > 2) {
                         cout << "Invalid input. Please enter 1 or 2.\n";
                         cin.clear(); // Clear the fail state
                         cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Ignore invalid input
                         continue; // Skip the rest of the loop iteration
                     }
-                    if (choice == 1) { // If the user chooses to add another filter
-                        // Display menu
-                        cout << "Choose the filter: \n"
-                             << "1 - Grayscale Conversion       2 - Black and White           3 - Invert Image                   4 - Merge Images\n"
-                             << "5 - Flip Image                 6 - Rotate Image              7 - Darken and Lighten Image       8 - Crop Images\n"
-                             << "9 - Adding a Frame             10- Detect Image Edges        11- Resizing Images                12- Blur Images\n"
-                             << "13-                            14-                           15- \n";
+                    if (choose == 1) { // If the user chooses to add another filter
                         break; // Exit the loop and display the filter menu again
 
-                    } else if (choice == 2) { // If the user chooses to save the image
+                    } else if (choose == 2) { // If the user chooses to save the image
                         // Call the saveImage function
-                        bool imageSaved = saveImage(image, pathOrName);
-                        break; // Exit the loop and end the program
+                        imageSaved = saveImage(image, pathOrName);
+                        if (imageSaved) {
+                            return_back = true;
+                            break; // If the image is saved successfully, exit the loop
+                        } else {
+                            cout << "Failed to save image.\n";
+                        }
                     } else {
                         cout << "Invalid input. Please enter 1 or 2.\n";
                     }}
-                    break;
-            }
+                break;
+            }}
         } else if (choice == 2) { //If the user chooses to exit the program
             cout << "Thanks for using the program. Goodbye!\n";
             break; // Exit the loop
@@ -400,6 +497,10 @@ int main() {
         }
     }
 
+
+
+
+
+
     return 0;
 }
-
