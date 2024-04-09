@@ -10,8 +10,10 @@
 // Helana Wageh: filter 5
 
 #include <iostream>
+#include <vector>
 #include "image_class.h"
 #include <string>
+#include <cmath>
 #include <limits> // For numeric_limits
 #include <algorithm> // for find
 using namespace std;
@@ -273,6 +275,78 @@ void mergeImages(Image& image, Image& image2, int option) {
 //__________________________________________
 // Function for Detect Image Edges
 
+void detectImageEdges(Image& image) {
+    // Convert the image to grayscale
+    grayscaleConversion(image);
+
+    // Define the Sobel kernels
+    int Gx[3][3] = {{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}};
+    int Gy[3][3] = {{-1, -2, -1}, {0, 0, 0}, {1, 2, 1}};
+
+    // Create a copy of the image to store the result
+    Image result = image;
+
+    // Create a matrix to store the gradient magnitudes
+    std::vector<std::vector<int>> gradients(image.width, std::vector<int>(image.height));
+
+    // Apply the Sobel operator and calculate the gradient magnitudes
+    int minGradient = std::numeric_limits<int>::max();
+    int maxGradient = std::numeric_limits<int>::min();
+    for (int i = 1; i < image.width - 1; ++i) {
+        for (int j = 1; j < image.height - 1; ++j) {
+            int gx = 0, gy = 0;
+            for (int x = -1; x <= 1; ++x) {
+                for (int y = -1; y <= 1; ++y) {
+                    gx += Gx[x + 1][y + 1] * image(i + x, j + y, 0);
+                    gy += Gy[x + 1][y + 1] * image(i + x, j + y, 0);
+                }
+            }
+
+            // Calculate the gradient magnitude
+            int magnitude = sqrt(gx * gx + gy * gy);
+            gradients[i][j] = magnitude;
+
+            // Update the minimum and maximum gradients
+            minGradient = std::min(minGradient, magnitude);
+            maxGradient = std::max(maxGradient, magnitude);
+        }
+    }
+
+    // Check if the minimum and maximum gradients are the same
+    if (minGradient == maxGradient) {
+        // If they are the same, set all pixel values to 0
+        for (int i = 0; i < image.width; ++i) {
+            for (int j = 0; j < image.height; ++j) {
+                for (int k = 0; k < 3; ++k) {
+                    result(i, j, k) = 0;
+                }
+            }
+        }
+    } else {
+        // If they are not the same, normalize the gradient magnitudes and set the pixel values in the result image
+        for (int i = 1; i < image.width - 1; ++i) {
+            for (int j = 1; j < image.height - 1; ++j) {
+                int normalizedMagnitude = 255 * (gradients[i][j] - minGradient) / (maxGradient - minGradient);
+                for (int k = 0; k < 3; ++k) {
+                    result(i, j, k) = normalizedMagnitude;
+                }
+            }
+        }
+    }
+
+    // Invert the colors
+    for (int i = 0; i < image.width; ++i) {
+        for (int j = 0; j < image.height; ++j) {
+            for (int k = 0; k < 3; ++k) {
+                result(i, j, k) = 255 - result(i, j, k);
+            }
+        }
+    }
+
+    // Replace the original image with the result
+    image = result;
+}
+
 //__________________________________________
 // Function for
 
@@ -444,7 +518,7 @@ int main() {
 
                 } else if (filter == 10) {
                     // Call the detectImageEdges function
-
+                    detectImageEdges( image);
 
                 } else if (filter == 11) {
 
