@@ -284,7 +284,7 @@ void detectImageEdges(Image& image) {
     int Gy[3][3] = {{-1, -2, -1}, {0, 0, 0}, {1, 2, 1}};
 
     // Create a copy of the image to store the result
-    Image result = image;
+    //Image result = image;
 
     // Create a matrix to store the gradient magnitudes
     std::vector<std::vector<int>> gradients(image.width, std::vector<int>(image.height));
@@ -318,7 +318,7 @@ void detectImageEdges(Image& image) {
         for (int i = 0; i < image.width; ++i) {
             for (int j = 0; j < image.height; ++j) {
                 for (int k = 0; k < 3; ++k) {
-                    result(i, j, k) = 0;
+                    image(i, j, k) = 0;
                 }
             }
         }
@@ -328,7 +328,7 @@ void detectImageEdges(Image& image) {
             for (int j = 1; j < image.height - 1; ++j) {
                 int normalizedMagnitude = 255 * (gradients[i][j] - minGradient) / (maxGradient - minGradient);
                 for (int k = 0; k < 3; ++k) {
-                    result(i, j, k) = normalizedMagnitude;
+                    image(i, j, k) = normalizedMagnitude;
                 }
             }
         }
@@ -338,13 +338,10 @@ void detectImageEdges(Image& image) {
     for (int i = 0; i < image.width; ++i) {
         for (int j = 0; j < image.height; ++j) {
             for (int k = 0; k < 3; ++k) {
-                result(i, j, k) = 255 - result(i, j, k);
+                image(i, j, k) = 255 - image(i, j, k);
             }
         }
     }
-
-    // Replace the original image with the result
-    image = result;
 }
 
 //__________________________________________
