@@ -196,7 +196,43 @@ void blackAndWhite(Image& image) {
                     image(i,j,k) = 255; // If the grayscale value is greater than or equal to the threshold, set the pixel to white
                 }}}}}
 //__________________________________________
-// Function for merge images
+// Functions for merging images
+// Function for resizing an image
+void resize(Image& image,int newWidth,int newHeight) {
+    // Create a temporary buffer to store the resized image data
+    unsigned char* tempData = new unsigned char[newWidth * newHeight * 3];
+    // Loop over each pixel in the new image
+    for (int i = 0; i < newWidth; ++i) {
+        for (int j = 0; j < newHeight; ++j) {
+            // Calculate the corresponding coordinates in the original image
+            double oldI = i * static_cast<double>(image.width) / newWidth;
+            double oldJ = j * static_cast<double>(image.height) / newHeight;
+            // Find the coordinates of the four pixels to interpolate in the original image
+            int x1 = static_cast<int>(oldI);
+            int y1 = static_cast<int>(oldJ);
+            int x2 = min(static_cast<int>(oldI) + 1, image.width - 1);
+            int y2 = min(static_cast<int>(oldJ) + 1, image.height - 1);
+            // Loop over each color channel
+            for (int k = 0; k < 3; ++k) {
+                // Perform bilinear interpolation of the color
+                double q11 = image(x1, y1, k);
+                double q12 = image(x1, y2, k);
+                double q21 = image(x2, y1, k);
+                double q22 = image(x2, y2, k);
+
+                double r1 = ((x2 - oldI) * q11 + (oldI - x1) * q21) / (x2 - x1);
+                double r2 = ((x2 - oldI) * q12 + (oldI - x1) * q22) / (x2 - x1);
+
+                tempData[(j * newWidth + i) * 3 + k] = (y2 - oldJ) * r1 + (oldJ - y1) * r2;
+            }}}
+    // Delete the old image data
+    delete[] image.imageData;
+    // Assign the new image data and dimensions to the image
+    image.imageData = tempData;
+    image.width = newWidth;
+    image.height = newHeight;
+}
+// Function for merging two images
 void mergeImages(Image& image, Image& image2, int option) {
     // Ask the user to choose the merge option
     cout << "Choose the merge option:\n"
@@ -204,104 +240,77 @@ void mergeImages(Image& image, Image& image2, int option) {
          << "2- Merge the common area of the smaller width and the smaller height\n";
     while (true) {
         cin >> option;
-
         // Check if the user's input is valid
         if (!cin.fail() && (option == 1 || option == 2)) {
             break; // Exit the loop if the input is valid
         }
-
         cout << "Invalid input. Please enter 1 or 2.\n";
         cin.clear(); // Clear the fail state
         cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Ignore invalid input
     }
-    Image* outputImage; // Pointer to the output image
-    if (option==1) {
+    if (option == 1) {
         // Determine the dimensions of the new image
-        int maxWidth = max(image.width, image2.width);
-        int maxHeight = max(image.height, image2.height);
-
-        // Create a new Image object with the maximum dimensions
-        outputImage = new Image(maxWidth, maxHeight);
-
+        int newWidth = max(image.width, image2.width);
+        int newHeight = max(image.height, image2.height);
+        // Resize the images
+        resize(image, newWidth, newHeight); // Resize the first image
+        resize(image2, newWidth, newHeight); // Resize the second image
         // Loop over each pixel in the new image
-        for (int i = 0; i < maxWidth; ++i) {
-            for (int j = 0; j < maxHeight; ++j) {
+        for (int i = 0; i < newWidth; ++i) {
+            for (int j = 0; j < newHeight; ++j) {
                 // For each pixel, if it is within the dimensions of the original images,
                 // calculate the average of the corresponding pixels in the input images
                 for (int k = 0; k < 3; ++k) {
                     if (i < image.width && j < image.height && i < image2.width && j < image2.height) {
-                        (*outputImage)(i, j, k) = (image(i, j, k) + image2(i, j, k)) / 2;
+                        (image)(i, j, k) = (image(i, j, k) + image2(i, j, k)) / 2;
                     } else if (i < image.width && j < image.height) {
-                        (*outputImage)(i, j, k) = image(i, j, k);
+                        (image)(i, j, k) = image(i, j, k);
                     } else if (i < image2.width && j < image2.height) {
-                        (*outputImage)(i, j, k) = image2(i, j, k);
+                        (image)(i, j, k) = image2(i, j, k);
                     } else {
-                        (*outputImage)(i, j, k) = 0; // Fill the rest of the image with black
-                    }
-                }
-            }
-        }
-
-        // Replace the first image with the merged image
-        image = *outputImage;
-    }else if (option==2) {
-        // Merge the common area of the smaller width and the smaller height
-        // This is the same as the original function
+                        (image)(i, j, k) = 0; // Fill the rest of the image with black
+                    }}}}
+    } else if (option == 2) {
         // Determine the dimensions of the common area
-        int commonWidth = min(image.width, image2.width);
-        int commonHeight = min(image.height, image2.height);
-
-        // Create a new Image object with the maximum dimensions
-        outputImage = new Image(commonWidth, commonHeight);
-
+        int newWidth = min(image.width, image2.width);
+        int newHeight = min(image.height, image2.height);
+        // Resize the images
+        resize(image, newWidth, newHeight); // Resize the first image
+        resize(image2, newWidth, newHeight); // Resize the second image
         // Loop over each pixel in the new image
-        for (int i = 0; i < commonWidth; ++i) {
-            for (int j = 0; j < commonHeight; ++j) {
+        for (int i = 0; i < newWidth; ++i) {
+            for (int j = 0; j < newHeight; ++j) {
                 // For each pixel, calculate the average of the corresponding pixels in the input images
                 for (int k = 0; k < 3; ++k) {
-                    (*outputImage)(i, j, k) = (image(i, j, k) + image2(i, j, k)) / 2;
-                }
-            }
-        }
-
-        // Replace the first image with the merged image
-        image = *outputImage;
-    }else{
+                    (image)(i, j, k) = (image(i, j, k) + image2(i, j, k)) / 2;
+                }}}
+    } else {
         cout << "Invalid option. Please enter 1 or 2.\n";
-    }
-}
-
+    }}
 
 //__________________________________________
 // Function for Detect Image Edges
-
 void detectImageEdges(Image& image) {
     // Convert the image to grayscale
     grayscaleConversion(image);
-
     // Define the Sobel kernels
     int Gx[3][3] = {{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}};
     int Gy[3][3] = {{-1, -2, -1}, {0, 0, 0}, {1, 2, 1}};
-
-    // Create a copy of the image to store the result
-    //Image result = image;
-
     // Create a matrix to store the gradient magnitudes
     std::vector<std::vector<int>> gradients(image.width, std::vector<int>(image.height));
-
     // Apply the Sobel operator and calculate the gradient magnitudes
     int minGradient = std::numeric_limits<int>::max();
     int maxGradient = std::numeric_limits<int>::min();
+    // Loop over each pixel in the image
     for (int i = 1; i < image.width - 1; ++i) {
         for (int j = 1; j < image.height - 1; ++j) {
             int gx = 0, gy = 0;
+            // Apply the Sobel kernels to the pixel and its neighbors
             for (int x = -1; x <= 1; ++x) {
                 for (int y = -1; y <= 1; ++y) {
                     gx += Gx[x + 1][y + 1] * image(i + x, j + y, 0);
                     gy += Gy[x + 1][y + 1] * image(i + x, j + y, 0);
-                }
-            }
-
+                }}
             // Calculate the gradient magnitude
             int magnitude = sqrt(gx * gx + gy * gy);
             gradients[i][j] = magnitude;
@@ -309,9 +318,7 @@ void detectImageEdges(Image& image) {
             // Update the minimum and maximum gradients
             minGradient = std::min(minGradient, magnitude);
             maxGradient = std::max(maxGradient, magnitude);
-        }
-    }
-
+        }}
     // Check if the minimum and maximum gradients are the same
     if (minGradient == maxGradient) {
         // If they are the same, set all pixel values to 0
@@ -319,9 +326,7 @@ void detectImageEdges(Image& image) {
             for (int j = 0; j < image.height; ++j) {
                 for (int k = 0; k < 3; ++k) {
                     image(i, j, k) = 0;
-                }
-            }
-        }
+                }}}
     } else {
         // If they are not the same, normalize the gradient magnitudes and set the pixel values in the result image
         for (int i = 1; i < image.width - 1; ++i) {
@@ -329,23 +334,91 @@ void detectImageEdges(Image& image) {
                 int normalizedMagnitude = 255 * (gradients[i][j] - minGradient) / (maxGradient - minGradient);
                 for (int k = 0; k < 3; ++k) {
                     image(i, j, k) = normalizedMagnitude;
-                }
-            }
-        }
-    }
-
-    // Invert the colors
+                }}}}
+    // Invert the colors to highlight the edges
     for (int i = 0; i < image.width; ++i) {
         for (int j = 0; j < image.height; ++j) {
             for (int k = 0; k < 3; ++k) {
                 image(i, j, k) = 255 - image(i, j, k);
             }
-        }
-    }
-}
+        }}}
 
 //__________________________________________
-// Function for
+// Function for resizing images
+void resizeImage(Image& image) {
+    int choice;
+    // Prompt the user to choose the resize option
+    cout << "Choose the resize option:\n"
+         << "1- Enter new dimensions\n"
+         << "2- Enter a ratio of reduction or increase\n";
+    while (true) {
+        cin >> choice;
+        // Check if the user's input is valid
+        if (!cin.fail() && (choice == 1 || choice == 2)) {
+            break; // Exit the loop if the input is valid
+        }
+        // If the input is invalid, prompt the user to enter a valid input
+        cout << "Invalid input. Please enter 1 or 2.\n";
+        cin.clear(); // Clear the fail state
+        cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Ignore invalid input
+    }
+    int newWidth, newHeight;
+    double ratio;
+    // If the user chooses to enter new dimensions
+    if (choice == 1) {
+        cout << "Enter new width: ";
+        cin >> newWidth;
+        cout << "Enter new height: ";
+        cin >> newHeight;
+    }
+        // If the user chooses to enter a ratio of reduction or increase
+    else if (choice == 2) {
+        cout << "Enter ratio: ";
+        cin >> ratio;
+        // Calculate the new dimensions based on the ratio
+        newWidth = static_cast<int>(image.width * ratio);
+        newHeight = static_cast<int>(image.height * ratio);
+    }
+        // If the user enters an invalid choice
+    else {
+        cout << "Invalid choice. Please enter 1 or 2.\n";
+        return;
+    }
+    // Create a temporary buffer to store the resized image data
+    unsigned char* tempData = new unsigned char[newWidth * newHeight * 3];
+    // Loop over each pixel in the new image
+    for (int i = 0; i < newWidth; ++i) {
+        for (int j = 0; j < newHeight; ++j) {
+            // Calculate the corresponding coordinates in the original image
+            double oldI = i * static_cast<double>(image.width) / newWidth;
+            double oldJ = j * static_cast<double>(image.height) / newHeight;
+
+            // Find the coordinates of the four pixels to interpolate in the original image
+            int x1 = static_cast<int>(oldI);
+            int y1 = static_cast<int>(oldJ);
+            int x2 = min(static_cast<int>(oldI) + 1, image.width - 1);
+            int y2 = min(static_cast<int>(oldJ) + 1, image.height - 1);
+
+            // Loop over each color channel
+            for (int k = 0; k < 3; ++k) {
+                // Perform bilinear interpolation of the color
+                double q11 = image(x1, y1, k);
+                double q12 = image(x1, y2, k);
+                double q21 = image(x2, y1, k);
+                double q22 = image(x2, y2, k);
+
+                double r1 = ((x2 - oldI) * q11 + (oldI - x1) * q21) / (x2 - x1);
+                double r2 = ((x2 - oldI) * q12 + (oldI - x1) * q22) / (x2 - x1);
+
+                tempData[(j * newWidth + i) * 3 + k] = (y2 - oldJ) * r1 + (oldJ - y1) * r2;
+            }}}
+    // Delete the old image data
+    delete[] image.imageData;
+    // Assign the new image data and dimensions to the image
+    image.imageData = tempData;
+    image.width = newWidth;
+    image.height = newHeight;
+}
 
 //__________________________________________
 // Function for
@@ -480,6 +553,7 @@ int main() {
                     //allow the user to enter the second image
                     string pathOrName2;
                     bool validInput2 = false;
+                    cout<<"Enter the second image\n";
                     while (!validInput2) {
                         cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear newline character
                         // Ask the user to enter the name or full path to the image
@@ -518,6 +592,7 @@ int main() {
                     detectImageEdges( image);
 
                 } else if (filter == 11) {
+                    resizeImage( image);
 
                 } else if (filter == 12) {
 
