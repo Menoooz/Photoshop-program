@@ -5,7 +5,7 @@
 // Author2 and ID and Group: Malak Reda Mohamed Esmail - 20230584 - Group B - S18
 // Author3 and ID and Group: Menna Talla Gamal Mahmoud - 20230421 - Group B - S18
 // Teaching Assistant: Ahmed Foad
-// Who did what: Menna Talla Gamal: filter 1,4,7,10 and the main menu
+// Who did what: Menna Talla Gamal: filter 1,4,7,10 and the main menu (bonus: filter 13: Samurai infrared photography filter)
 // Malak Reda: filter 3,4
 // Helana Wageh: filter 5
 
@@ -421,7 +421,39 @@ void resizeImage(Image& image) {
 }
 
 //__________________________________________
-// Function for
+// Function for Samurai infrared photography filter
+void addInfraredFilter(Image& image) {
+    // Define the shadow threshold
+    int shadowThreshold = 100; // Not used in this function
+    // Define the white threshold
+    int whiteThreshold = 205; // Threshold for determining if a pixel is close to white
+    // Loop over each pixel in the image
+    for (int i = 0; i < image.width; ++i) {
+        for (int j = 0; j < image.height; ++j) {
+            // Set the red channel to maximum and slightly decrease the green and blue channels
+            // This gives the image a red tint
+            image(i, j, 0) = 255; // Red channel
+            image(i, j, 1) = max(image(i, j, 1) - 50, 0); // Green channel
+            image(i, j, 2) = max(image(i, j, 2) - 50, 0); // Blue channel
+        }}
+    // Invert the colors of the image
+    invertImage(image);
+    // Loop over each pixel in the image again
+    for (int i = 0; i < image.width; ++i) {
+        for (int j = 0; j < image.height; ++j) {
+            // Set the red channel to maximum and slightly decrease the green and blue channels
+            // This gives the inverted image a red tint
+            image(i, j, 0) = 255; // Red channel
+            image(i, j, 1) = max(image(i, j, 1) - 50, 0); // Green channel
+            image(i, j, 2) = max(image(i, j, 2) - 50, 0); // Blue channel
+            // If the pixel is close to white (i.e., its red, green, and blue values are all greater than whiteThreshold),
+            // increase its brightness by increasing each color channel by 50, but not above 255
+            // This makes the white areas of the image even brighter
+            if (image(i, j, 0) > whiteThreshold && image(i, j, 1) > whiteThreshold && image(i, j, 2) > whiteThreshold) {
+                image(i, j, 0) = min(image(i, j, 0) + 50, 255); // Red channel
+                image(i, j, 1) = min(image(i, j, 1) + 50, 255); // Green channel
+                image(i, j, 2) = min(image(i, j, 2) + 50, 255); // Blue channel
+            }}}}
 
 //__________________________________________
 // Function for
@@ -597,8 +629,11 @@ int main() {
                 } else if (filter == 12) {
 
                 } else if (filter == 13) {
+                    //Call the Samurai infrared photography filter
+                    addInfraredFilter( image);
 
                 } else if (filter == 14) {
+
 
                 } else if (filter == 15) {
 
