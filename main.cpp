@@ -1,3 +1,4 @@
+
 // FCAI – Structured Programming – 2024 - Assignment 2
 // Program Name: CS112_A3_Part1_S17-S18_20230461_20230584_20230421.cpp
 // Program Description: This program develops an image processing tool that can apply different filters (changes) to a given image of any size and the four popular image formats.
@@ -5,9 +6,9 @@
 // Author2 and ID and Group: Malak Reda Mohamed Esmail - 20230584 - Group B - S18
 // Author3 and ID and Group: Menna Talla Gamal Mahmoud - 20230421 - Group B - S18
 // Teaching Assistant: Ahmed Foad
-// Who did what: Menna Talla Gamal: filter 1,4,7,10 and the main menu (bonus: filter 13: Samurai infrared photography filter)
-// Malak Reda: filter 3,4
-// Helana Wageh: filter 5
+// Who did what: Menna Talla Gamal: filters 1,4,7,10 and the main menu (bonus: filter 17: Samurai infrared photography filter)
+//               Malak Reda: filters 3,6,9,12 (bonus: filter 16: Purple effect)
+//               Helana Wageh: filters 2,5,8,11
 
 #include <iostream>
 #include <vector>
@@ -456,13 +457,147 @@ void addInfraredFilter(Image& image) {
             }}}}
 
 //__________________________________________
-// Function for
+// Function for Rotate Image
+void rotateImage90(Image& src, Image& dest) {
+    dest = Image(src.height, src.width); // Swapping dimensions for 90-degree rotation
+    for (int y = 0; y < src.height; ++y) {
+        for (int x = 0; x < src.width; ++x) {
+            for (int c = 0; c < src.channels; ++c) {
+                dest.setPixel(y, src.width - 1 - x, c, src.getPixel(x, y, c));
+            }
+        }
+    }
+    src = dest; // Replace the original image with the rotated image
+}
+
+void rotateImage180(Image& src, Image& dest) {
+    dest = Image(src.width, src.height);
+    for (int y = 0; y < src.height; ++y) {
+        for (int x = 0; x < src.width; ++x) {
+            for (int c = 0; c < src.channels; ++c) {
+                dest.setPixel(src.width - 1 - x, src.height - 1 - y, c, src.getPixel(x, y, c));
+            }
+        }
+    }
+    src = dest; // Replace the original image with the rotated image
+}
+
+void rotateImage270(Image& src, Image& dest) {
+    dest = Image(src.height, src.width); // Swapping dimensions for 270-degree rotation
+    for (int y = 0; y < src.height; ++y) {
+        for (int x = 0; x < src.width; ++x) {
+            for (int c = 0; c < src.channels; ++c) {
+                dest.setPixel(src.height - 1 - y, x, c, src.getPixel(x, y, c));
+            }
+        }
+    }
+    src = dest; // Replace the original image with the rotated image
+}
+
+void rotateImage(int rotationChoice, Image& image) {
+    cout << "Choose the rotation angle:\n"
+         << "1. 90 degrees clockwise\n"
+         << "2. 180 degrees clockwise\n"
+         << "3. 270 degrees clockwise\n"
+         << "Enter your choice: ";
+    while (true) {
+        // Check if the user's input is valid
+        if (!(cin >> rotationChoice) || rotationChoice < 1 || rotationChoice > 3) {
+            cout << "Invalid input. Please enter 1 , 2 or 3.\n";
+            cin.clear(); // Clear the fail state
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Ignore invalid input
+        } else {
+            break; // Exit the loop once a valid choice is entered
+        }
+    }
+    Image rotatedImage;
+    switch (rotationChoice) {
+        case 1:
+            rotateImage90(image,rotatedImage);
+            break;
+        case 2:
+            rotateImage180(image,rotatedImage);
+            break;
+        case 3:
+            rotateImage270(image,rotatedImage);
+            break;
+        default:
+            cerr << "Invalid choice. Exiting.\n";
+            break;
+    }
+    image = rotatedImage; // Update the original image with the rotated image
+}
 
 //__________________________________________
-// Function for
+// Function for Blur Filter
+void applyBlurFilter(Image& image) {
+    // Apply the blur filter to each pixel
+    for (int j = 3; j < image.height - 3; ++j) { // Modified range to accommodate the kernel
+        for (int i = 3; i < image.width - 3; ++i) { // Modified range to accommodate the kernel
+            for (int k = 0; k < 3; ++k) { // Iterate over each color channel (RGB)
+                // Compute the average of the surrounding 7x7 pixels
+                float sum = 0.0f;
+                for (int dj = -3; dj <= 3; ++dj) { // Modified range for the kernel
+                    for (int di = -3; di <= 3; ++di) { // Modified range for the kernel
+                        sum += image(i + di, j + dj, k);
+                    }
+                }
+                float avg = sum / 49.0f; // Compute the average (7x7 kernel = 49 pixels)
+                image(i, j, k) = static_cast<unsigned char>(avg); // Set the blurred pixel value
+            }
+        }
+    }
+
+}
 
 //__________________________________________
-// Function for
+// Functions for Flipping the Image
+// Function to perform horizontal flipping of the image
+void HFLIP(Image& image) {
+    int width = image.width; // Use width attribute directly
+    int height = image.height; // Use height attribute directly
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width / 2; x++) {
+            for (int c = 0; c < image.channels; ++c) { // Iterate over each color channel
+                unsigned char temp = image.getPixel(x, y, c); // Use unsigned char instead of Color
+                image.setPixel(x, y, c, image.getPixel(width - x - 1, y, c));
+                image.setPixel(width - x - 1, y, c, temp);
+            }}}}
+// Function to perform vertical flipping of the image
+void VFLIP(Image& image) {
+    int width = image.width; // Use width attribute directly
+    int height = image.height; // Use height attribute directly
+    for (int y = 0; y < height / 2; y++) {
+        for (int x = 0; x < width; x++) {
+            for (int c = 0; c < image.channels; ++c) { // Iterate over each color channel
+                unsigned char temp = image.getPixel(x, y, c); // Use unsigned char instead of Color
+                image.setPixel(x, y, c, image.getPixel(x, height - y - 1, c));
+                image.setPixel(x, height - y - 1, c, temp);
+            }}}}
+// Function to flip the image
+void FLIP(Image& image , int Fchoice){
+    cout<<"Choose the flip direction:\n"
+        <<"1- Horizontal flip\n"
+        <<"2- Vertical flip\n"
+        <<"Enter your choice:";
+    while (true) {
+        // Check if the user's input is valid
+        if (!(cin >> Fchoice) || Fchoice < 1 || Fchoice > 2) {
+            cout << "Invalid input. Please enter 1 or 2.\n";
+            cin.clear(); // Clear the fail state
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Ignore invalid input
+        } else {
+            break; // Exit the loop once a valid choice is entered
+        }}
+    if (Fchoice==1){
+        HFLIP(image);
+    }
+    else if (Fchoice==2){
+        VFLIP(image);
+    }
+    else{
+        cout << "Invalid input. Please enter 1 or 2.\n";
+    }}
 
 //__________________________________________
 // Function for
@@ -558,7 +693,7 @@ int main() {
                  << "1 - Grayscale Conversion       2 - Black and White           3 - Invert Image                   4 - Merge Images\n"
                  << "5 - Flip Image                 6 - Rotate Image              7 - Darken and Lighten Image       8 - Crop Images\n"
                  << "9 - Adding a Frame             10- Detect Image Edges        11- Resizing Images                12- Blur Images\n"
-                 << "13-                            14-                           15- \n";
+                 << "13- Infrared Photography                         14-                           15- \n";
             while (true) {
                 // Check if input is valid
                 if (!(cin >> filter) || filter < 1 || filter > 15) {
@@ -605,8 +740,13 @@ int main() {
                     mergeImages(image, image2, option);
 
                 } else if (filter == 5) {
+                    // Call the Flipping function
+                    int Fchoice;
+                    FLIP( image , Fchoice);
 
                 } else if (filter == 6) {
+                    int rotationChoice;
+                    rotateImage (rotationChoice,image);
 
                 } else if (filter == 7) {
                     // Call the darkenAndLightenImage function
@@ -627,6 +767,7 @@ int main() {
                     resizeImage( image);
 
                 } else if (filter == 12) {
+                    applyBlurFilter(image);
 
                 } else if (filter == 13) {
                     //Call the Samurai infrared photography filter
@@ -677,10 +818,6 @@ int main() {
             cout << "Invalid input. Please enter 1 or 2.\n";
         }
     }
-
-
-
-
 
 
     return 0;
