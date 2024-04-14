@@ -458,97 +458,89 @@ void addInfraredFilter(Image& image) {
 
 //__________________________________________
 // Function for Rotate Image
-void rotateImage90(Image& src, Image& dest) {
-    dest = Image(src.height, src.width); // Swapping dimensions for 90-degree rotation
-    for (int y = 0; y < src.height; ++y) {
-        for (int x = 0; x < src.width; ++x) {
-            for (int c = 0; c < src.channels; ++c) {
-                dest.setPixel(y, src.width - 1 - x, c, src.getPixel(x, y, c));
-            }
-        }
-    }
-    src = dest; // Replace the original image with the rotated image
-}
-
-void rotateImage180(Image& src, Image& dest) {
-    dest = Image(src.width, src.height);
-    for (int y = 0; y < src.height; ++y) {
-        for (int x = 0; x < src.width; ++x) {
-            for (int c = 0; c < src.channels; ++c) {
-                dest.setPixel(src.width - 1 - x, src.height - 1 - y, c, src.getPixel(x, y, c));
-            }
-        }
-    }
-    src = dest; // Replace the original image with the rotated image
-}
-
-void rotateImage270(Image& src, Image& dest) {
-    dest = Image(src.height, src.width); // Swapping dimensions for 270-degree rotation
-    for (int y = 0; y < src.height; ++y) {
-        for (int x = 0; x < src.width; ++x) {
-            for (int c = 0; c < src.channels; ++c) {
-                dest.setPixel(src.height - 1 - y, x, c, src.getPixel(x, y, c));
-            }
-        }
-    }
-    src = dest; // Replace the original image with the rotated image
-}
-
-void rotateImage(int rotationChoice, Image& image) {
+void rotateImage(Image& image, int rotationChoice) {
     cout << "Choose the rotation angle:\n"
          << "1. 90 degrees clockwise\n"
          << "2. 180 degrees clockwise\n"
          << "3. 270 degrees clockwise\n"
-         << "Enter your choice: ";
+         << "Enter your choice (1,2 or 3): ";
     while (true) {
-        // Check if the user's input is valid
         if (!(cin >> rotationChoice) || rotationChoice < 1 || rotationChoice > 3) {
-            cout << "Invalid input. Please enter 1 , 2 or 3.\n";
+            cout << "Invalid input. Please enter 1,2 or 3.\n";
             cin.clear(); // Clear the fail state
             cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Ignore invalid input
         } else {
             break; // Exit the loop once a valid choice is entered
         }
     }
-    Image rotatedImage;
-    switch (rotationChoice) {
-        case 1:
-            rotateImage90(image,rotatedImage);
-            break;
-        case 2:
-            rotateImage180(image,rotatedImage);
-            break;
-        case 3:
-            rotateImage270(image,rotatedImage);
-            break;
-        default:
-            cerr << "Invalid choice. Exiting.\n";
-            break;
+    unsigned char* tempData;
+    int newWidth, newHeight;
+    if (rotationChoice == 1 || rotationChoice == 3) {
+        newWidth = image.height;
+        newHeight = image.width;
+        tempData = new unsigned char[newWidth * newHeight * 3];
+    } else {
+        newWidth = image.width;
+        newHeight = image.height;
+        tempData = new unsigned char[newWidth * newHeight * 3];
     }
-    image = rotatedImage; // Update the original image with the rotated image
+    if (rotationChoice == 1) {
+        for (int j = 0; j < image.height; ++j) {
+            for (int i = 0; i < image.width; ++i) {
+                for (int k = 0; k < image.channels; ++k) {
+                    int new_i = image.height - 1 - j;
+                    int new_j = i;
+                    tempData[(new_j * newWidth + new_i) * 3 + k] = image.getPixel(i, j, k);
+                }
+            }
+        }
+    } else if (rotationChoice == 2) {
+        for (int j = 0; j < image.height; ++j) {
+            for (int i = 0; i < image.width; ++i) {
+                for (int k = 0; k < image.channels; ++k) {
+                    int new_i = image.width - 1 - i;
+                    int new_j = image.height - 1 - j;
+                    tempData[(new_j * newWidth + new_i) * 3 + k] = image.getPixel(i, j, k);
+                }
+            }
+        }
+    } else if (rotationChoice == 3) {
+        for (int j = 0; j < image.height; ++j) {
+            for (int i = 0; i < image.width; ++i) {
+                for (int k = 0; k < image.channels; ++k) {
+                    int new_i = j;
+                    int new_j = image.width - 1 - i;
+                    tempData[(new_j * newWidth + new_i) * 3 + k] = image.getPixel(i, j, k);
+                }
+            }
+        }
+    } else {
+        cout << "Invalid choice!";
+        return;
+    }
+    delete[] image.imageData;
+    image.imageData = tempData;
+    image.width = newWidth;
+    image.height = newHeight;
 }
 
 //__________________________________________
 // Function for Blur Filter
-void applyBlurFilter(Image& image) {
+void applyBlurFilter(Image& img) {
     // Apply the blur filter to each pixel
-    for (int j = 3; j < image.height - 3; ++j) { // Modified range to accommodate the kernel
-        for (int i = 3; i < image.width - 3; ++i) { // Modified range to accommodate the kernel
+    for (int j = 3; j < img.height - 3; ++j) { // Modified range to accommodate the kernel
+        for (int i = 3; i < img.width - 3; ++i) { // Modified range to accommodate the kernel
             for (int k = 0; k < 3; ++k) { // Iterate over each color channel (RGB)
                 // Compute the average of the surrounding 7x7 pixels
                 float sum = 0.0f;
                 for (int dj = -3; dj <= 3; ++dj) { // Modified range for the kernel
                     for (int di = -3; di <= 3; ++di) { // Modified range for the kernel
-                        sum += image(i + di, j + dj, k);
+                        sum += img(i + di, j + dj, k);
                     }
                 }
                 float avg = sum / 49.0f; // Compute the average (7x7 kernel = 49 pixels)
-                image(i, j, k) = static_cast<unsigned char>(avg); // Set the blurred pixel value
-            }
-        }
-    }
-
-}
+                img(i, j, k) = static_cast<unsigned char>(avg); // Set the blurred pixel value
+            }}}}
 
 //__________________________________________
 // Functions for Flipping the Image
@@ -600,10 +592,60 @@ void FLIP(Image& image , int Fchoice){
     }}
 
 //__________________________________________
-// Function for
+// Function for Purple night effect
+void purpleeffect(Image& image) {
+    // Define brightness factor
+    float brightnessFactor = 1.2;
+    // Loop over each pixel in the image
+    for (int i = 0; i < image.width; ++i) {
+        for (int j = 0; j < image.height; ++j) {
+            // Retrieve original RGB values
+            int originalR = image(i, j, 0);
+            int originalG = image(i, j, 1);
+            int originalB = image(i, j, 2);
+            // Blend original RGB values with night purple color
+            image(i, j, 0) = (originalR);
+            image(i, j, 1) = (originalG * 0.7);
+            image(i, j, 2) = (originalB);
+            // Increase the RGB values by multiplying with the brightness factor
+            image(i, j, 0) = min(255, static_cast<int>(image(i, j, 0) * brightnessFactor)); // Red
+            image(i, j, 1) = min(255, static_cast<int>(image(i, j, 1) * brightnessFactor)); // Green
+            image(i, j, 2) = min(255, static_cast<int>(image(i, j, 2) * brightnessFactor)); // Blue
+        }}}
 
 //__________________________________________
-// Function for
+// Function for cropping the image
+void cropImage(Image& image) {
+    int x, y, width, height;
+    cout << "Enter the starting point (x, y): ";
+    cin >> x >> y;
+    cout << "Enter the dimensions (width, height): ";
+    cin >> width >> height;
+    // Check if the entered coordinates are valid
+    if (x < 0 || y < 0 || x >= image.width || y >= image.height) {
+        cout << "Invalid starting point. Please try again.\n";
+        return;
+    }
+    // Check if the entered dimensions are valid
+    if (width <= 0 || height <= 0 || x + width > image.width || y + height > image.height) {
+        cout << "Invalid dimensions. Please try again.\n";
+        return;
+    }
+    // Create a temporary buffer to store the cropped image data
+    unsigned char* tempData = new unsigned char[width * height * 3];
+    // Copy the pixels from the specified area in the original image to the temporary buffer
+    for (int i = 0; i < width; ++i) {
+        for (int j = 0; j < height; ++j) {
+            for (int k = 0; k < 3; ++k) {
+                tempData[(j * width + i) * 3 + k] = image(x + i, y + j, k);
+            }}}
+    // Delete the old image data
+    delete[] image.imageData;
+    // Assign the temporary buffer to the image data and update the image dimensions
+    image.imageData = tempData;
+    image.width = width;
+    image.height = height;
+}
 
 //__________________________________________
 // Function for
@@ -693,7 +735,7 @@ int main() {
                  << "1 - Grayscale Conversion       2 - Black and White           3 - Invert Image                   4 - Merge Images\n"
                  << "5 - Flip Image                 6 - Rotate Image              7 - Darken and Lighten Image       8 - Crop Images\n"
                  << "9 - Adding a Frame             10- Detect Image Edges        11- Resizing Images                12- Blur Images\n"
-                 << "13- Infrared Photography                         14-                           15- \n";
+                 << "13- Infrared Photography       14- Purple night effect       15- \n";
             while (true) {
                 // Check if input is valid
                 if (!(cin >> filter) || filter < 1 || filter > 15) {
@@ -745,14 +787,18 @@ int main() {
                     FLIP( image , Fchoice);
 
                 } else if (filter == 6) {
+                    //Call the ratation function
                     int rotationChoice;
-                    rotateImage (rotationChoice,image);
+                    rotateImage( image, rotationChoice);
 
                 } else if (filter == 7) {
                     // Call the darkenAndLightenImage function
                     darkenAndLightenImage(image);
 
                 } else if (filter == 8) {
+                    //Call the cropping the image function
+                    Image croppedImage;
+                    cropImage( image);
 
                 } else if (filter == 9) {
                     // Call the addFrameToPicture function
@@ -764,9 +810,11 @@ int main() {
                     detectImageEdges( image);
 
                 } else if (filter == 11) {
+                    //Call the resize function
                     resizeImage( image);
 
                 } else if (filter == 12) {
+                    //Call the Blur Filter function
                     applyBlurFilter(image);
 
                 } else if (filter == 13) {
@@ -774,6 +822,8 @@ int main() {
                     addInfraredFilter( image);
 
                 } else if (filter == 14) {
+                    //Call the Purple night effect function
+                    purpleeffect( image);
 
 
                 } else if (filter == 15) {
