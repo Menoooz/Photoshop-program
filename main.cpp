@@ -471,8 +471,7 @@ void rotateImage(Image& image, int rotationChoice) {
             cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Ignore invalid input
         } else {
             break; // Exit the loop once a valid choice is entered
-        }
-    }
+        }}
     unsigned char* tempData;
     int newWidth, newHeight;
     if (rotationChoice == 1 || rotationChoice == 3) {
@@ -491,9 +490,7 @@ void rotateImage(Image& image, int rotationChoice) {
                     int new_i = image.height - 1 - j;
                     int new_j = i;
                     tempData[(new_j * newWidth + new_i) * 3 + k] = image.getPixel(i, j, k);
-                }
-            }
-        }
+                }}}
     } else if (rotationChoice == 2) {
         for (int j = 0; j < image.height; ++j) {
             for (int i = 0; i < image.width; ++i) {
@@ -501,9 +498,7 @@ void rotateImage(Image& image, int rotationChoice) {
                     int new_i = image.width - 1 - i;
                     int new_j = image.height - 1 - j;
                     tempData[(new_j * newWidth + new_i) * 3 + k] = image.getPixel(i, j, k);
-                }
-            }
-        }
+                }}}
     } else if (rotationChoice == 3) {
         for (int j = 0; j < image.height; ++j) {
             for (int i = 0; i < image.width; ++i) {
@@ -511,9 +506,7 @@ void rotateImage(Image& image, int rotationChoice) {
                     int new_i = j;
                     int new_j = image.width - 1 - i;
                     tempData[(new_j * newWidth + new_i) * 3 + k] = image.getPixel(i, j, k);
-                }
-            }
-        }
+                }}}
     } else {
         cout << "Invalid choice!";
         return;
@@ -526,7 +519,7 @@ void rotateImage(Image& image, int rotationChoice) {
 
 //__________________________________________
 // Function for Blur Filter
-void applyBlurFilter(Image& img) {
+void blurImage(Image& img) {
     // Apply the blur filter to each pixel
     for (int j = 3; j < img.height - 3; ++j) { // Modified range to accommodate the kernel
         for (int i = 3; i < img.width - 3; ++i) { // Modified range to accommodate the kernel
@@ -617,20 +610,24 @@ void purpleeffect(Image& image) {
 // Function for cropping the image
 void cropImage(Image& image) {
     int x, y, width, height;
-    cout << "Enter the starting point (x, y): ";
-    cin >> x >> y;
-    cout << "Enter the dimensions (width, height): ";
-    cin >> width >> height;
-    // Check if the entered coordinates are valid
-    if (x < 0 || y < 0 || x >= image.width || y >= image.height) {
-        cout << "Invalid starting point. Please try again.\n";
-        return;
-    }
-    // Check if the entered dimensions are valid
-    if (width <= 0 || height <= 0 || x + width > image.width || y + height > image.height) {
-        cout << "Invalid dimensions. Please try again.\n";
-        return;
-    }
+    bool validInput = false;
+
+    while (!validInput) {
+        cout << "Enter the starting point (x, y): ";
+        cin >> x >> y;
+        cout << "Enter the dimensions (width, height): ";
+        cin >> width >> height;
+        // Check if the entered coordinates are valid
+        if (x < 0 || y < 0 || x >= image.width || y >= image.height) {
+            cout << "Invalid starting point. Please try again.\n";
+        }
+        // Check if the entered dimensions are valid
+        else if (width <= 0 || height <= 0 || x + width > image.width || y + height > image.height) {
+            cout << "Invalid dimensions. Please try again.\n";
+        }
+        else {
+            validInput = true;
+        }}
     // Create a temporary buffer to store the cropped image data
     unsigned char* tempData = new unsigned char[width * height * 3];
     // Copy the pixels from the specified area in the original image to the temporary buffer
@@ -815,7 +812,7 @@ int main() {
 
                 } else if (filter == 12) {
                     //Call the Blur Filter function
-                    applyBlurFilter(image);
+                    blurImage(image);
 
                 } else if (filter == 13) {
                     //Call the Samurai infrared photography filter
