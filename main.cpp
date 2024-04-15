@@ -1,14 +1,17 @@
 
 // FCAI – Structured Programming – 2024 - Assignment 2
-// Program Name: CS112_A3_Part1_S17-S18_20230461_20230584_20230421.cpp
+// Program Name: CS112_A3_Part2B_S17-S18_20230461_20230584_20230421.cpp
 // Program Description: This program develops an image processing tool that can apply different filters (changes) to a given image of any size and the four popular image formats.
 // Author1 and ID and Group: Helana Wageh Edward Soltan - 20230461 - Group B - S17
 // Author2 and ID and Group: Malak Reda Mohamed Esmail - 20230584 - Group B - S18
 // Author3 and ID and Group: Menna Talla Gamal Mahmoud - 20230421 - Group B - S18
 // Teaching Assistant: Ahmed Foad
-// Who did what: Menna Talla Gamal: filters 1,4,7,10 and the main menu (bonus: filter 17: Samurai infrared photography filter)
+// Who did what: Menna Talla Gamal: filters 1,4,7,10 and the main menu (bonus: filter 17: Samurai infrared photography filter , filter 15: Wano villagers old Den Den Mushi)
 //               Malak Reda: filters 3,6,9,12 (bonus: filter 16: Purple effect)
 //               Helana Wageh: filters 2,5,8,11
+//Gihub accounts: Menna :https://github.com/Menoooz
+//                Malak :https://github.com/malakreda
+//                Hilana:https://github.com/H-Edward39
 
 #include <iostream>
 #include <vector>
@@ -516,24 +519,38 @@ void rotateImage(Image& image, int rotationChoice) {
     image.width = newWidth;
     image.height = newHeight;
 }
-
 //__________________________________________
 // Function for Blur Filter
-void blurImage(Image& img) {
-    // Apply the blur filter to each pixel
-    for (int j = 3; j < img.height - 3; ++j) { // Modified range to accommodate the kernel
-        for (int i = 3; i < img.width - 3; ++i) { // Modified range to accommodate the kernel
-            for (int k = 0; k < 3; ++k) { // Iterate over each color channel (RGB)
-                // Compute the average of the surrounding 7x7 pixels
-                float sum = 0.0f;
-                for (int dj = -3; dj <= 3; ++dj) { // Modified range for the kernel
-                    for (int di = -3; di <= 3; ++di) { // Modified range for the kernel
-                        sum += img(i + di, j + dj, k);
+void blurImage(Image& image) {
+    // Create a temporary buffer to store the blurred pixel values
+    unsigned char* tempData = new unsigned char[image.width * image.height * 3];
+
+// Iterate over each pixel in the image
+    for (int i = 0; i < image.width; ++i) {
+        for (int j = 0; j < image.height; ++j) {
+            for (int k = 0; k < 3; ++k) {
+                int sum = 0;
+                int count = 0;
+
+                // Iterate over a 12-pixel square around the current pixel with blur radius = 8
+                for (int x = i - 8; x <= i + 8; ++x) {
+                    for (int y = j - 8; y <= j + 8; ++y) {
+                        if (x >= 0 && x < image.width && y >= 0 && y < image.height) {
+                            sum += image(x, y, k);
+                            count++;
+                        }
                     }
                 }
-                float avg = sum / 49.0f; // Compute the average (7x7 kernel = 49 pixels)
-                img(i, j, k) = static_cast<unsigned char>(avg); // Set the blurred pixel value
-            }}}}
+
+                // Average the pixel values and store in the temporary buffer
+                tempData[(j * image.width + i) * 3 + k] = sum / count;
+            }
+        }
+    }
+
+// Replace the original image data with the blurred data
+    delete[] image.imageData;
+    image.imageData = tempData;}
 
 //__________________________________________
 // Functions for Flipping the Image
@@ -645,7 +662,35 @@ void cropImage(Image& image) {
 }
 
 //__________________________________________
-// Function for
+// Function for old TV effect
+void noiseFilter(Image& image, double intensity) {
+    // Seed the random number generator
+    srand(time(0));
+
+    // Loop over each pixel in the image
+    for (int i = 0; i < image.width; ++i) {
+        for (int j = 0; j < image.height; ++j) {
+            // Loop over each color channel
+            for (int k = 0; k < 3; ++k) {
+                // Generate a random noise value
+                int noise = (rand() % 256) - 128; // Random number in the range [-128, 127]
+
+                // Add the noise to the current pixel value, scaled by the intensity
+                int newValue = image(i, j, k) + static_cast<int>(noise * intensity);
+
+                // Clamp the new value to the range [0, 255]
+                newValue = max(0, min(255, newValue));
+
+                // Assign the new value to the pixel
+                image(i, j, k) = static_cast<unsigned char>(newValue);
+            }
+        }
+    }
+}
+void oldTvFilter(Image& image) {
+    // Apply a noise filter
+    noiseFilter(image, 0.5); // 0.1 is the noise intensity, adjust as needed
+}
 
 //__________________________________________
 // Function for Save Image
@@ -732,7 +777,7 @@ int main() {
                  << "1 - Grayscale Conversion       2 - Black and White           3 - Invert Image                   4 - Merge Images\n"
                  << "5 - Flip Image                 6 - Rotate Image              7 - Darken and Lighten Image       8 - Crop Images\n"
                  << "9 - Adding a Frame             10- Detect Image Edges        11- Resizing Images                12- Blur Images\n"
-                 << "13- Infrared Photography       14- Purple night effect       15- \n";
+                 << "13- Infrared Photography       14- Purple night effect       15- Old TV effect\n";
             while (true) {
                 // Check if input is valid
                 if (!(cin >> filter) || filter < 1 || filter > 15) {
@@ -786,7 +831,7 @@ int main() {
                 } else if (filter == 6) {
                     //Call the ratation function
                     int rotationChoice;
-                    rotateImage( image, rotationChoice);
+                    rotateImage( image , rotationChoice);
 
                 } else if (filter == 7) {
                     // Call the darkenAndLightenImage function
@@ -824,6 +869,8 @@ int main() {
 
 
                 } else if (filter == 15) {
+                    // Call the old TV filter function
+                    oldTvFilter(image);
 
                 }else {
                     cout << "Invalid input. Please enter a number from 1 to 15.\n";
